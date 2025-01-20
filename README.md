@@ -1,11 +1,29 @@
 # fiap-videos-processamento
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+Projeto desenvolvido em Java Quarkus, para executar listener de mensagearia SQS e processamento de vídeos.
+O objetivo é receber um vídeo, processar o mesmo e gerar um .zip com frames do vídeo processado.
 
-If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
+## Startando SQS na maquina local para teste
+Para executar o SQS local basta utilizar docker compose, para isso execute o comando:
 
-## AQUI
+```
+docker compose up localstack
+```
+
+Após subir o container docker para SQS, basta configurar aws cli, conforme roteiro oficial citado logo abaixo, e depois executar os comandos para criar as filas:
+
+```
+aws sqs create-queue --queue-name=processar --profile localstack --endpoint-url=http://localhost:4566
+aws sqs create-queue --queue-name=processados --profile localstack --endpoint-url=http://localhost:4566
+```
+
+Roteiro oficial utilizado como guia:
 https://docs.quarkiverse.io/quarkus-amazon-services/dev/amazon-sqs.html#_provision_sqs_locally_manually
+
+## Executando Testes
+```
+./mvnw test
+```
 
 ## Running the application in dev mode
 
