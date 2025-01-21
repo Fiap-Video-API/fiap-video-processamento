@@ -60,6 +60,11 @@ public class VideoServiceImpl implements IVideoService {
                     LOGGER.info("VideoServiceImpl.iniciarListener: Buscando mensagem na fila.");
                     
                     ItemFila itemFila = messageConnect.adquirirMensagemFila();
+                    
+                    if (itemFila == null) {
+                        continue;
+                    }
+
                     Video video = itemFila.getVideo();
                     
                     processarVideo(video);
@@ -82,6 +87,8 @@ public class VideoServiceImpl implements IVideoService {
             var pathFile = pathProcessar + video.getPathVideo();
             var pathFrames = pathProcessados + video.getId();
 
+            verificarDiretorioArquivos(pathFrames);
+
             String[] command = {
                 "/usr/bin/ffmpeg",
                 "-i", pathFile,
@@ -89,7 +96,7 @@ public class VideoServiceImpl implements IVideoService {
                 pathFrames + "/frame_%04d.png"
             };
 
-            sistemaOperacionalConnect.executarComandoSO(String.join(" ", command));         
+            sistemaOperacionalConnect.executarComandoSO(command);         
             LOGGER.info("VideoServiceImpl.processarVideo: Processamento finalizado com sucesso.");
         } catch (Exception e) {
             LOGGER.error("VideoServiceImpl.processarVideo: Erro ao processar vídeo", e);
@@ -103,12 +110,12 @@ public class VideoServiceImpl implements IVideoService {
         try {
             var pathFrames = pathProcessados + video.getId();
             String[] command = {
-                "/usr/bin/zip",
-                pathFrames + ".zip", 
-                pathFrames + "/*.png",
+                "/bin/bash",
+                "-c",
+                String.format("/usr/bin/zip -j %s %s/*.png", pathFrames + ".zip", pathFrames)
             };
 
-            sistemaOperacionalConnect.executarComandoSO(String.join(" ", command));         
+            sistemaOperacionalConnect.executarComandoSO(command);         
             LOGGER.info("VideoServiceImpl.comprimirFrames: Zip finalizado com sucesso.");
         } catch (Exception e) {
             LOGGER.error("VideoServiceImpl.comprimirFrames: Erro ao comprimir vídeo", e);
@@ -123,7 +130,7 @@ public class VideoServiceImpl implements IVideoService {
             var pathFile = pathProcessar + video.getPathVideo();
             
             String[] command = { "rm", "-f", pathFile };
-            sistemaOperacionalConnect.executarComandoSO(String.join(" ", command));            
+            sistemaOperacionalConnect.executarComandoSO(command);            
             LOGGER.info("VideoServiceImpl.excluirVideoProcessado: Excluido com sucesso.");
         } catch (Exception e) {
             LOGGER.error("VideoServiceImpl.excluirVideoProcessado: Erro ao excluir vídeo", e);
@@ -138,7 +145,7 @@ public class VideoServiceImpl implements IVideoService {
             var pathFrames = pathProcessados + video.getId();
             String[] command = { "rm", "-rf", pathFrames };
             
-            sistemaOperacionalConnect.executarComandoSO(String.join(" ", command));            
+            sistemaOperacionalConnect.executarComandoSO(command);            
             LOGGER.info("VideoServiceImpl.excluirFramesProcessado: Excluido com sucesso.");
         } catch (Exception e) {
             LOGGER.error("VideoServiceImpl.excluirFramesProcessado: Erro ao excluir frames", e);

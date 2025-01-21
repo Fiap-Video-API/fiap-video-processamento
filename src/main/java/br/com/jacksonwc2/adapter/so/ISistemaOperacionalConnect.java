@@ -9,6 +9,6 @@ public interface ISistemaOperacionalConnect {
      * Executa o comando no prompt do Sistema Operacional
      * @param comando
      */
-    public void executarComandoSO(String comando);
+    public void executarComandoSO(String[] comando);
 
 }

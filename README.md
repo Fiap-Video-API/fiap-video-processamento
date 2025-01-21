@@ -20,6 +20,26 @@ aws sqs create-queue --queue-name=processados --profile localstack --endpoint-ur
 Roteiro oficial utilizado como guia:
 https://docs.quarkiverse.io/quarkus-amazon-services/dev/amazon-sqs.html#_provision_sqs_locally_manually
 
+## Pré-requisitos para o SO
+
+É necessário instalar FFMPeg e ZIP no sistema operacional linux, para que os comandos executados pela aplicação funcionem corretamente.
+
+```
+sudo apt update
+sudo apt install ffmpeg
+sudo apt install zip
+```
+
+## PUT SQS para processamento de arquivos
+
+Copie o arquivo **resources/arquivos/input.mp4** (vídeo de exemplo) para o diretório especificado em **path.processar** (definido em aplicattion.properties).
+Após esse procedimento, você poderá executar o comando abaixo para simular a ação da API responsável por realizar upload do vídeo e publicação na fila de vídeos a serem processados.
+
+```
+aws sqs send-message --queue-url http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/processar --message-body "{\"id\": \"12345\", \"status\": \"AGUARDANDO\", \"pathVideo\": \"input.mp4\", \"pathZip\": \"\"}" --region us-east-1 --profile localstack --endpoint-url=http://localhost:4566
+
+```
+
 ## Executando Testes
 ```
 ./mvnw test

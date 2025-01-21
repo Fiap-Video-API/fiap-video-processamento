@@ -31,7 +31,7 @@ public class SQSMessageConnectImpl implements IMessageConnect {
 
     ReceiveMessageRequest request;
 
-    void onStart(@Observes StartupEvent event) {
+    void configurarReceiveMessageRequest() {
         LOGGER.info("SQSMessageConnect.onStart: Iniciando configuração ReceiveMessageRequest para conexões com SQS");
         
         // Configura o ReceiveMessageRequest com o visibility timeout
@@ -46,6 +46,10 @@ public class SQSMessageConnectImpl implements IMessageConnect {
     @Override
     public ItemFila adquirirMensagemFila() {
         LOGGER.info("SQSMessageConnect.adquirirMensagemFila: Buscando mensagens");
+
+        if (request == null) {
+            configurarReceiveMessageRequest();
+        }
 
         List<Message> messages = sqs.receiveMessage(request).messages();
                 

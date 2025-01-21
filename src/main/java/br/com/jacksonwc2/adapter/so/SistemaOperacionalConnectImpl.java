@@ -14,8 +14,8 @@ public class SistemaOperacionalConnectImpl implements ISistemaOperacionalConnect
     
 
 	@Override
-	public void executarComandoSO(String comando) {
-        LOGGER.infof("SistemaOperacionalConnectImpl.executarComandoSO: Processando comando no S.O %s", comando);
+	public void executarComandoSO(String[] comando) {
+        LOGGER.infof("SistemaOperacionalConnectImpl.executarComandoSO: Processando comando no S.O %s", String.join(" ", comando));
 
         try {
             ProcessBuilder processBuilder = new ProcessBuilder();
