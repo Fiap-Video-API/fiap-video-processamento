@@ -5,7 +5,6 @@ import lombok.Getter;
 @Getter
 public enum VideoStatus {
 
-    AGUARDANDO("AGUARDANDO"), 
     PROCESSANDO("PROCESSANDO"), 
     FALHA("FALHA"), 
     FINALIZADO("FINALIZADO");

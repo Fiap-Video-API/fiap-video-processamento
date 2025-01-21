@@ -36,7 +36,7 @@ Copie o arquivo **resources/arquivos/input.mp4** (vídeo de exemplo) para o dire
 Após esse procedimento, você poderá executar o comando abaixo para simular a ação da API responsável por realizar upload do vídeo e publicação na fila de vídeos a serem processados.
 
 ```
-aws sqs send-message --queue-url http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/processar --message-body "{\"id\": \"12345\", \"status\": \"AGUARDANDO\", \"pathVideo\": \"input.mp4\", \"pathZip\": \"\"}" --region us-east-1 --profile localstack --endpoint-url=http://localhost:4566
+aws sqs send-message --queue-url http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/processar --message-body "{\"id\": \"12345\", \"status\": \"PROCESSANDO\", \"pathVideo\": \"input.mp4\", \"pathZip\": \"\"}" --region us-east-1 --profile localstack --endpoint-url=http://localhost:4566
 
 ```
 
