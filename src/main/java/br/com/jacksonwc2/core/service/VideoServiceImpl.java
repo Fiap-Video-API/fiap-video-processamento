@@ -17,6 +17,8 @@ import br.com.jacksonwc2.adapter.message.IMessageConnect;
 import br.com.jacksonwc2.adapter.so.ISistemaOperacionalConnect;
 import br.com.jacksonwc2.core.domain.ItemFila;
 import br.com.jacksonwc2.core.domain.Video;
+import br.com.jacksonwc2.core.domain.VideoStatus;
+import br.com.jacksonwc2.core.exception.VideoException;
 import io.quarkus.runtime.StartupEvent;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
@@ -56,32 +58,38 @@ public class VideoServiceImpl implements IVideoService {
         
         executor.submit(() -> {
             while (true) {
-                try {
-                    LOGGER.info("VideoServiceImpl.iniciarListener: Buscando mensagem na fila.");
-                    
-                    ItemFila itemFila = messageConnect.adquirirMensagemFila();
-                    
-                    if (itemFila == null) {
-                        continue;
-                    }
+                LOGGER.info("VideoServiceImpl.iniciarListener: Buscando mensagem na fila.");
+                
+                ItemFila itemFila = messageConnect.adquirirMensagemFila();
+                
+                if (itemFila == null) {
+                    continue;
+                }
 
-                    Video video = itemFila.getVideo();
-                    
+                Video video = itemFila.getVideo();
+
+                try {    
                     processarVideo(video);
                     comprimirFrames(video);
                     excluirVideoProcessado(video);
                     excluirFramesProcessado(video);
+                    
+                    video.setStatus(VideoStatus.FINALIZADO.getDescricao());
                     notificarVideoProcessado(video, itemFila.getOriginalMessage());
 
-                } catch (Exception e) {
+                } catch (VideoException e) {
                     LOGGER.error("VideoServiceImpl.iniciarListener: Erro ao consumir mensagem da fila", e);
+                    
+                    // NOTIFICANDO FALHA NO PROCESSAMENTO PARA ENVIO DE E-MAIL
+                    video.setStatus(VideoStatus.FALHA.getDescricao());
+                    notificarVideoProcessado(video, itemFila.getOriginalMessage());
                 }
             }
         });
     }
 
 	@Override
-	public void processarVideo(Video video) {
+	public void processarVideo(Video video) throws VideoException {
         LOGGER.info("VideoServiceImpl.processarVideo: Processamento iniciado.");
 		try {
             var pathFile = pathProcessar + video.getPathVideo();
@@ -99,12 +107,12 @@ public class VideoServiceImpl implements IVideoService {
             sistemaOperacionalConnect.executarComandoSO(command);         
             LOGGER.info("VideoServiceImpl.processarVideo: Processamento finalizado com sucesso.");
         } catch (Exception e) {
-            LOGGER.error("VideoServiceImpl.processarVideo: Erro ao processar vídeo", e);
+            throw new VideoException("VideoServiceImpl.processarVideo: Erro ao processar vídeo");
         }
 	}
 
 	@Override
-	public void comprimirFrames(Video video) {
+	public void comprimirFrames(Video video) throws VideoException {
 	    LOGGER.info("VideoServiceImpl.comprimirFrames: Comprimindo os arquivos.");
         
         try {
@@ -116,14 +124,16 @@ public class VideoServiceImpl implements IVideoService {
             };
 
             sistemaOperacionalConnect.executarComandoSO(command);         
+            video.setPathZip(pathFrames + ".zip");
+            
             LOGGER.info("VideoServiceImpl.comprimirFrames: Zip finalizado com sucesso.");
         } catch (Exception e) {
-            LOGGER.error("VideoServiceImpl.comprimirFrames: Erro ao comprimir vídeo", e);
+            throw new VideoException("VideoServiceImpl.comprimirFrames: Erro ao comprimir vídeo");
         }
 	}
 
 	@Override
-	public void excluirVideoProcessado(Video video) {
+	public void excluirVideoProcessado(Video video) throws VideoException {
         LOGGER.info("VideoServiceImpl.excluirVideoProcessado: Excluindo vídeo.");
 		
         try {
@@ -133,12 +143,12 @@ public class VideoServiceImpl implements IVideoService {
             sistemaOperacionalConnect.executarComandoSO(command);            
             LOGGER.info("VideoServiceImpl.excluirVideoProcessado: Excluido com sucesso.");
         } catch (Exception e) {
-            LOGGER.error("VideoServiceImpl.excluirVideoProcessado: Erro ao excluir vídeo", e);
+            throw new VideoException("VideoServiceImpl.excluirVideoProcessado: Erro ao excluir vídeo");
         }
 	}
 
     @Override
-	public void excluirFramesProcessado(Video video) {
+	public void excluirFramesProcessado(Video video) throws VideoException {
         LOGGER.info("VideoServiceImpl.excluirFramesProcessado: Excluindo Frames.");
 
 		try {
@@ -148,7 +158,7 @@ public class VideoServiceImpl implements IVideoService {
             sistemaOperacionalConnect.executarComandoSO(command);            
             LOGGER.info("VideoServiceImpl.excluirFramesProcessado: Excluido com sucesso.");
         } catch (Exception e) {
-            LOGGER.error("VideoServiceImpl.excluirFramesProcessado: Erro ao excluir frames", e);
+            throw new VideoException("VideoServiceImpl.excluirFramesProcessado: Erro ao excluir frames");
         }
 	}
 

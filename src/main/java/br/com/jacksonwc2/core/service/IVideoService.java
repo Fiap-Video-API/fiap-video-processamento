@@ -1,6 +1,7 @@
 package br.com.jacksonwc2.core.service;
 
 import br.com.jacksonwc2.core.domain.Video;
+import br.com.jacksonwc2.core.exception.VideoException;
 import io.quarkus.runtime.StartupEvent;
 import jakarta.enterprise.event.Observes;
 
@@ -19,25 +20,25 @@ public interface IVideoService {
      * Recebe os dados do vídeo e realiza o processamento com FFMPeg para a geração dos frames.
      * @param video
      */
-    void processarVideo(Video video);
+    void processarVideo(Video video) throws VideoException;
     
     /**
      * Comprime os frames gerados pelo processamento de vídeos.
      * @param video
      */
-    void comprimirFrames(Video video);
+    void comprimirFrames(Video video) throws VideoException;
 
     /**
      * Exclui o vídeo já processado.
      * @param video
      */
-    void excluirVideoProcessado(Video video);
+    void excluirVideoProcessado(Video video) throws VideoException;
 
     /**
      * Exclui os frames do vídeo já processado.
      * @param video
      */
-    void excluirFramesProcessado(Video video);
+    void excluirFramesProcessado(Video video) throws VideoException;
 
     /**
      * Notifica o encerramento do processamento do vídeo.
