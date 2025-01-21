@@ -124,7 +124,7 @@ public class VideoServiceImpl implements IVideoService {
             };
 
             sistemaOperacionalConnect.executarComandoSO(command);         
-            video.setPathZip(pathFrames + ".zip");
+            video.setPathZip(video.getId() + ".zip");
             
             LOGGER.info("VideoServiceImpl.comprimirFrames: Zip finalizado com sucesso.");
         } catch (Exception e) {
