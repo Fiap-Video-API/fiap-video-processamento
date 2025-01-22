@@ -51,6 +51,6 @@ public interface IVideoService {
      * Verifica se os diretórios de arquivos configurados existem
      * @param path
      */
-    void verificarDiretorioArquivos(String path);
+    void verificarDiretorioArquivos(String path) throws VideoException;
     
 }

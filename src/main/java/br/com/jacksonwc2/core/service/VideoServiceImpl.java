@@ -23,7 +23,6 @@ import io.quarkus.runtime.StartupEvent;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
-import software.amazon.awssdk.services.sqs.SqsClient;
 
 @ApplicationScoped
 public class VideoServiceImpl implements IVideoService {
@@ -31,17 +30,14 @@ public class VideoServiceImpl implements IVideoService {
     private static final Logger LOGGER = Logger.getLogger(VideoServiceImpl.class);
     private final ExecutorService executor = Executors.newFixedThreadPool(3);
 
-    @Inject
-    SqsClient sqs;
-
     @ConfigProperty(name = "queue.processados")
-    String queueProcessadosUrl;
+    public String queueProcessadosUrl;
 
     @ConfigProperty(name = "path.processados")
-    String pathProcessados;
+    public String pathProcessados;
 
     @ConfigProperty(name = "path.processar")
-    String pathProcessar;
+    public String pathProcessar;
 
     @Inject
     IMessageConnect messageConnect;
@@ -49,12 +45,19 @@ public class VideoServiceImpl implements IVideoService {
     @Inject
     ISistemaOperacionalConnect sistemaOperacionalConnect;
 
+    @Inject
+    ObjectMapper objectMapper;
+
     @Override
     public void iniciarListener(@Observes StartupEvent event) {
         LOGGER.info("VideoServiceImpl.iniciarListener: Iniciando Listeners de mensagens da fila.");
 
-        verificarDiretorioArquivos(pathProcessar);
-        verificarDiretorioArquivos(pathProcessados);
+        try {
+            verificarDiretorioArquivos(pathProcessar);
+            verificarDiretorioArquivos(pathProcessados);
+        } catch (VideoException e) {
+            LOGGER.error("VideoServiceImpl.iniciarListener: Erro ao verificar diretórios.", e);
+        }
         
         executor.submit(() -> {
             while (true) {
@@ -63,6 +66,7 @@ public class VideoServiceImpl implements IVideoService {
                 ItemFila itemFila = messageConnect.adquirirMensagemFila();
                 
                 if (itemFila == null) {
+                    Thread.sleep(1000);
                     continue;
                 }
 
@@ -167,15 +171,17 @@ public class VideoServiceImpl implements IVideoService {
         LOGGER.info("VideoServiceImpl.notificarVideoProcessado: Notificar vídeo processado.");
 
 		try {
+            var json = objectMapper.writeValueAsString(video);
+            
             messageConnect.deletarMensagemFila(originalMessage);
-			messageConnect.enviarMensagemFila(queueProcessadosUrl, new ObjectMapper().writeValueAsString(video));
+			messageConnect.enviarMensagemFila(queueProcessadosUrl, json);
 		} catch (JsonProcessingException e) {
 			LOGGER.error("VideoServiceImpl.notificarVideoProcessado: Falha ao notificar vído processado", e);
 		}
 	}
 
 	@Override
-	public void verificarDiretorioArquivos(String path) {
+	public void verificarDiretorioArquivos(String path) throws VideoException {
         LOGGER.info("VideoServiceImpl.verificarDiretorioArquivos: Verificando se os diretórios existem.");
 		
         Path diretorio = Paths.get(path);
@@ -189,10 +195,14 @@ public class VideoServiceImpl implements IVideoService {
                 Files.createDirectories(diretorio);
                 LOGGER.infof("VideoServiceImpl.verificarDiretorioArquivos: diretório criado: %s", diretorio.toAbsolutePath());
             } catch (IOException e) {
-                LOGGER.error("VideoServiceImpl.verificarDiretorioArquivos: Erro ao criar diretório", e);
+                throw new VideoException("VideoServiceImpl.verificarDiretorioArquivos: Erro ao criar diretório");
             }
         }
 	}
+
+    public void stopListeners(){
+        this.executor.shutdown();
+    }
 
     
 }
