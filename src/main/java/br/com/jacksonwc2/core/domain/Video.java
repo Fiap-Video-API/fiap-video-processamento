@@ -12,8 +12,11 @@ import lombok.Setter;
 public class Video {
     
     String id;
+    String idUsuario;
+    String emailUsuario;
     String status;
     String pathVideo;
     String pathZip;    
+    boolean dowload;
 
 }
