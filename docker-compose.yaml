@@ -9,8 +9,18 @@ services:
     environment:
       - SERVICES=sqs
       - AWS_DEFAULT_REGION=us-east-1
+    volumes:
+      - "./init-sqs.sh:/etc/localstack/init-sqs.sh"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 5s
+      retries: 5
+    command: ["/bin/sh", "-c", "chmod +x /etc/localstack/init-sqs.sh && /etc/localstack/init-sqs.sh && exec localstack"]
+    network_mode: host
   
   fiap-video-processamento:
+    depends_on: 
+      - localstack
     build:
       context: .
       dockerfile: Dockerfile
@@ -21,5 +31,8 @@ services:
       - PATH_PROCESSADOS=/arquivos/processados/
       - QUEUE_PROCESSADOS=http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/processados
       - QUEUE_PROCESSAR=http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/processar
+      - QUARKUS_SQS_ENDPOINT_OVERRIDE=http://localhost:4566
+      - QUARKUS_SQS_AWS_CREDENTIALS_TYPE=static
     volumes:
       - /home/jackson/arquivos:/arquivos
+    network_mode: host

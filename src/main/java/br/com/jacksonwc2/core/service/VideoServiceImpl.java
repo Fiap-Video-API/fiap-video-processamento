@@ -53,6 +53,12 @@ public class VideoServiceImpl implements IVideoService {
         LOGGER.info("VideoServiceImpl.iniciarListener: Iniciando Listeners de mensagens da fila.");
 
         try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        
+        try {
             verificarDiretorioArquivos(pathProcessar);
             verificarDiretorioArquivos(pathProcessados);
         } catch (VideoException e) {
