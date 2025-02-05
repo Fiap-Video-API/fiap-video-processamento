@@ -1,9 +1,30 @@
-# fiap-videos-processamento
+# Fiap Video Processamento
+
+![GitHub repo size](https://img.shields.io/github/repo-size/Fiap-Video-API/fiap-video-processamento?style=for-the-badge)
+![GitHub language count](https://img.shields.io/github/languages/top/Fiap-Video-API/fiap-video-processamento?style=for-the-badge)
+![Bitbucket open pull requests](https://img.shields.io/bitbucket/pr-raw/Fiap-Video-API/fiap-video-processamento?style=for-the-badge)
 
 Projeto desenvolvido em Java Quarkus, para executar listener de mensagearia SQS e processamento de vídeos.
 O objetivo é receber um vídeo, processar o mesmo e gerar um .zip com frames do vídeo processado.
 
-## Startando SQS na maquina local para teste
+<img src="docs/arch.jpg" alt="Diagrama de arquitetura">
+
+> Diagrama de arquitetura elaborado.
+
+## ⚙️ Tecnologias
+O ambiente de desenvolvimento emprega múltiplas bibliotecas que visam otimizar a produtividade e garantir a qualidade do código. Entre elas, destacam-se:
+
+- [Quarkus](https://quarkus.io/): Framework Java supersônico e subatômico, otimizado para Kubernetes e aplicações nativas em nuvem.  
+- [Swagger](https://swagger.io/): Ferramenta para documentação e design de APIs RESTful.  
+- [FFmpeg](https://ffmpeg.org/): Solução completa e multiplataforma para gravar, converter e transmitir áudio e vídeo.  
+- [Zip](https://linux.die.net/man/1/zip): Utilitário para empacotar e compactar arquivos em um arquivo ZIP.  
+
+
+## 💻 Pré-requisitos
+
+Antes de começar, verifique se você atendeu aos seguintes requisitos:
+
+### Startando SQS na maquina local para teste
 Para executar o SQS local basta utilizar docker compose, para isso execute o comando:
 
 ```
@@ -29,7 +50,6 @@ sudo apt update
 sudo apt install ffmpeg
 sudo apt install zip
 ```
-
 ## PUT SQS para processamento de arquivos
 
 Copie o arquivo **resources/arquivos/input.mp4** (vídeo de exemplo) para o diretório especificado em **path.processar** (definido em aplicattion.properties).
@@ -40,64 +60,43 @@ aws sqs send-message --queue-url http://sqs.us-east-1.localhost.localstack.cloud
 
 ```
 
-## Executando Testes
-```
-./mvnw test
-```
+## 🚀 Executando o projeto
 
-## Running the application in dev mode
-
-You can run your application in dev mode that enables live coding using:
-
-```shell script
-./mvnw quarkus:dev
-```
-
-> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
-
-## Packaging and running the application
-
-The application can be packaged using:
+O aplicativo pode ser empacotado usando:
 
 ```shell script
 ./mvnw package
 ```
 
-It produces the `quarkus-run.jar` file in the `target/quarkus-app/` directory.
-Be aware that it’s not an _über-jar_ as the dependencies are copied into the `target/quarkus-app/lib/` directory.
+Isso cria um arquivo `quarkus-run.jar` no diretório `target/quarkus-app/`.
+Cuidado que não cria um arquivo _über-jar_ já que as dependências serão copiadas para o diretório `target/quarkus-app/lib/`.
 
-The application is now runnable using `java -jar target/quarkus-app/quarkus-run.jar`.
+A aplicação é executável usando o arquivo `java -jar target/quarkus-app/quarkus-run.jar`.
 
-If you want to build an _über-jar_, execute the following command:
+Se quiser buildar um _über-jar_, executar o comando:
 
 ```shell script
 ./mvnw package -Dquarkus.package.jar.type=uber-jar
 ```
 
-The application, packaged as an _über-jar_, is now runnable using `java -jar target/*-runner.jar`.
+A aplicação, empacotada como um _über-jar_, é executável utilizando `java -jar target/*-runner.jar`.
 
-## Creating a native executable
+## Criando um executável nativo
 
-You can create a native executable using:
+É possivel criar um executável nativo com o comando:
 
 ```shell script
 ./mvnw package -Dnative
 ```
 
-Or, if you don't have GraalVM installed, you can run the native executable build in a container using:
+Caso não possua o GraalVM instalado, é possivel executar o nativo com um container utilizando:
 
 ```shell script
 ./mvnw package -Dnative -Dquarkus.native.container-build=true
 ```
 
-You can then execute your native executable with: `./target/fiap-videos-processamento-1.0.0-SNAPSHOT-runner`
+Para executar os testes, utilize o seguinte comando:
 
-If you want to learn more about building native executables, please consult <https://quarkus.io/guides/maven-tooling>.
-
-## Provided Code
-
-### REST
-
-Easily start your REST Web Services
-
-[Related guide section...](https://quarkus.io/guides/getting-started-reactive#reactive-jax-rs-resources)
+```
+./mvnw test
+```
