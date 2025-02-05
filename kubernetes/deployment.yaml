@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fiap-video-processamento-deployment
+  namespace: fiap-video
+  labels:
+    app: fiap-video-processamento-deployment
+spec:
+  template:
+    metadata:
+      name: fiap-video-processamento-deployment
+      labels:
+        app: fiap-video-processamento-deployment
+    spec:
+      containers:
+        - name: fiap-video-processamento-deployment-container
+          image: jacksoncarbonera/fiap-video-processamento
+          ports:
+            - containerPort: 3000
+          envFrom:
+          - configMapRef:
+              name: fiap-video-processamento-config 
+          resources:
+            limits:
+              cpu: "100m"
+              memory: "100Mi"
+            requests:
+              cpu: "50m"
+              memory: "50Mi"
+          volumeMounts:
+            - mountPath: /arquivos
+              name: video-data
+      volumes:
+        - name: video-data
+          persistentVolumeClaim:
+            claimName: fiap-video-pvc
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fiap-video-processamento-deployment
