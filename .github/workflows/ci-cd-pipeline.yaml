@@ -43,10 +43,10 @@ jobs:
           fi
           LINE_COVERAGE=$(awk -F',' '/TOTAL/{print $4}' "$COVERAGE_FILE")
           if (( $(echo "$LINE_COVERAGE < $MIN_COVERAGE" | bc -l) )); then
-            echo "A cobertura de teste está abaixo do limite mínimo de $MIN_COVERAGE%. Cobertura atual: $LINE_COVERAGE%"
+            echo "A cobertura de teste está abaixo do limite mínimo."
             exit 1
           else
-            echo "A cobertura da linha atende ao limite mínimo: $LINE_COVERAGE%"
+            echo "A cobertura da linha atende ao limite mínimo."
           fi
 
       - name: Upload results to Codecov (Analise estática)
@@ -56,9 +56,6 @@ jobs:
 
       - name: Run Integration Tests
         run: mvn verify
-
-      - name: Build Docker Image
-        run: mvn package -Pnative
 
   push-docker-image:
     runs-on: ubuntu-latest
@@ -70,6 +67,23 @@ jobs:
 
       - name: Login to DockerHub
         run: docker login -u jacksoncarbonera -p ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven
+        
+      - name: Build Native App
+        run: mvn install package -Pnative -Dquarkus.native.container-build=true -DskipTests
 
       - name: Build and push Docker image
         run: |
