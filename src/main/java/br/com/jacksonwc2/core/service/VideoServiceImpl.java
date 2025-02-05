@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -28,8 +29,7 @@ import jakarta.inject.Inject;
 public class VideoServiceImpl implements IVideoService {
 
     private static final Logger LOGGER = Logger.getLogger(VideoServiceImpl.class);
-    private final ExecutorService executor = Executors.newFixedThreadPool(3);
-
+    
     @ConfigProperty(name = "queue.processados")
     public String queueProcessadosUrl;
 
@@ -38,6 +38,9 @@ public class VideoServiceImpl implements IVideoService {
 
     @ConfigProperty(name = "path.processar")
     public String pathProcessar;
+
+    @ConfigProperty(name = "threads.processamento")
+    public int numeroThreadsProcessamento;
 
     @Inject
     IMessageConnect messageConnect;
@@ -48,15 +51,11 @@ public class VideoServiceImpl implements IVideoService {
     @Inject
     ObjectMapper objectMapper;
 
+    private ExecutorService executor;
+
     @Override
     public void iniciarListener(@Observes StartupEvent event) {
         LOGGER.info("VideoServiceImpl.iniciarListener: Iniciando Listeners de mensagens da fila.");
-
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
         
         try {
             verificarDiretorioArquivos(pathProcessar);
@@ -64,8 +63,16 @@ public class VideoServiceImpl implements IVideoService {
         } catch (VideoException e) {
             LOGGER.error("VideoServiceImpl.iniciarListener: Erro ao verificar diretórios.", e);
         }
-        
-        executor.submit(() -> {
+
+        // Inicia um numero X de threads para processar videos em paralelo
+        this.executor = Executors.newFixedThreadPool(numeroThreadsProcessamento);
+        for (int i = 0; i < numeroThreadsProcessamento; i++) {
+            executor.submit(videoListener());
+        }
+    }
+
+    private Callable<Object> videoListener() {
+        return () -> {
             while (true) {
                 LOGGER.info("VideoServiceImpl.iniciarListener: Buscando mensagem na fila.");
                 
@@ -95,7 +102,7 @@ public class VideoServiceImpl implements IVideoService {
                     notificarVideoProcessado(video, itemFila.getOriginalMessage());
                 }
             }
-        });
+        };
     }
 
 	@Override
