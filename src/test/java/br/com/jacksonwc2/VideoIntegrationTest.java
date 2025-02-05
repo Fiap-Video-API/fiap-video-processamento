@@ -50,6 +50,7 @@ public class VideoIntegrationTest {
         videoService.queueProcessadosUrl = "test-queue-url";
         videoService.pathProcessados = "./";
         videoService.pathProcessar = "./";
+        videoService.numeroThreadsProcessamento = 1;
         
         Video video = new Video();
         video.setId("12345");
@@ -75,7 +76,7 @@ public class VideoIntegrationTest {
             videoService.iniciarListener(mock(StartupEvent.class));
             
             // Aguarda a execução da thread por 100ms
-            Thread.sleep(100);
+            Thread.sleep(1000);
     
             // Finaliza a execução da thread
             videoService.stopListeners();
