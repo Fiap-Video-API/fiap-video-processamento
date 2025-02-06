@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fiap-video-processamento-config
+  namespace: fiap-video
+  labels:
+    name: fiap-video-processamento-config
+data:
+  PATH_PROCESSAR: "/arquivos/processar/"
+  PATH_PROCESSADOS: "/arquivos/processados/"
+  AWS_REGION: "us-east-1"
+  QUEUE_PROCESSAR: "https://sqs.us-east-1.amazonaws.com/756624658310/processar"
+  QUEUE_PROCESSADOS: "https://sqs.us-east-1.amazonaws.com/756624658310/processados"
