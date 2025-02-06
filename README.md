@@ -17,6 +17,24 @@ aws sqs create-queue --queue-name=processar --profile localstack --endpoint-url=
 aws sqs create-queue --queue-name=processados --profile localstack --endpoint-url=http://localhost:4566
 ```
 
+Enviar mensagem de teste:
+```
+aws sqs send-message \
+    --queue-url "http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/processar" \
+    --profile localstack --endpoint-url=http://localhost:4566 \
+    --message-body '{
+        "id": "12345",
+        "idUsuario": "98765",
+        "emailUsuario": "usuario@example.com",
+        "status": "PROCESSADO",
+        "pathVideo": "0b8c4280-30ab-4efa-92f3-7bb618847c46.mp4",
+        "pathZip": "",
+        "dowload": true
+    }'
+
+```
+
+
 Roteiro oficial utilizado como guia:
 https://docs.quarkiverse.io/quarkus-amazon-services/dev/amazon-sqs.html#_provision_sqs_locally_manually
 
