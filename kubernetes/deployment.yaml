@@ -28,7 +28,7 @@ spec:
               cpu: "50m"
               memory: "50Mi"
           volumeMounts:
-            - mountPath: /arquivos
+            - mountPath: "/arquivos"
               name: video-data
       volumes:
         - name: video-data
