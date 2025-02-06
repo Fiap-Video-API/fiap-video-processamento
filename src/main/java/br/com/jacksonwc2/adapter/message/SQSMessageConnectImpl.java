@@ -59,7 +59,7 @@ public class SQSMessageConnectImpl implements IMessageConnect {
         }
 
         try {
-            
+            LOGGER.info("Mensagem recebida: " + messages.get(0).body());
             ItemFila ret = new ItemFila();
             ret.setOriginalMessage(messages.get(0));
             ret.setVideo(new ObjectMapper().readValue(messages.get(0).body(), Video.class));
